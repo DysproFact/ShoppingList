@@ -1,10 +1,10 @@
 package com.list.shopping.activities;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -12,24 +12,32 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Toast;
 
 import com.list.shopping.R;
+import com.list.shopping.fragments.GroceryFragment;
 
-import butterknife.BindDrawable;
-import butterknife.BindString;
 import butterknife.BindView;
-import butterknife.BindViews;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, GroceryFragment.OnFragmentInteractionListener {
 
-    @BindView(R.id.toolbar) Toolbar toolbar;
-    @BindView(R.id.fab) FloatingActionButton fab;
-    @BindView(R.id.drawer_layout) DrawerLayout drawer;
-    @BindView(R.id.nav_view) NavigationView navigationView;
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
+    @BindView(R.id.fabMenu)
+    FloatingActionButton fabMenu;
+    @BindView(R.id.fabAdd)
+    FloatingActionButton fabAdd;
+    @BindView(R.id.fabRemove)
+    FloatingActionButton fabRemove;
+    @BindView(R.id.drawer_layout)
+    DrawerLayout drawer;
+    @BindView(R.id.nav_view)
+    NavigationView navigationView;
 
-    /* https://ptyagicodecamp.github.io/creating-sub-menuitems-for-fab-floating-action-button.html */
+    private boolean isFABOpen = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,15 +48,40 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setSupportActionBar(toolbar);
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
+        drawer.addDrawerListener(toggle);
         toggle.syncState();
 
         navigationView.setNavigationItemSelectedListener(this);
+
+        // Gestion du fragment
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.main_fragment, new GroceryFragment());
+        ft.commit();
     }
 
-    @OnClick(R.id.fab)
-    public void fabListener(View view){
-        Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+    @OnClick(R.id.fabMenu)
+    public void fabListener(View view) {
+        if (!isFABOpen) {
+            isFABOpen = true;
+            fabAdd.animate().translationY(-getResources().getDimension(R.dimen.anim_fab_subMenu));
+            fabRemove.animate().translationX(-getResources().getDimension(R.dimen.anim_fab_subMenu));
+            fabMenu.setImageDrawable(getResources().getDrawable(R.drawable.ic_close_white_24px));
+        } else {
+            isFABOpen = false;
+            fabAdd.animate().translationY(0);
+            fabRemove.animate().translationX(0);
+            fabMenu.setImageDrawable(getResources().getDrawable(R.drawable.ic_menu_white_24px));
+        }
+    }
+
+    @OnClick({R.id.fabAdd, R.id.fabRemove})
+    public void fabSubMenuListener(FloatingActionButton fabSubMenu) {
+        if (fabSubMenu == fabAdd) {
+            Toast.makeText(this, "Ajouter", Toast.LENGTH_SHORT).show();
+        }
+        if (fabSubMenu == fabRemove) {
+            Toast.makeText(this, "Supprimer", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -104,5 +137,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
     }
 }

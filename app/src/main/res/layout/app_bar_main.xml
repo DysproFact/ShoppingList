@@ -23,11 +23,30 @@
     <include layout="@layout/content_main" />
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/fabAdd"
+        android:layout_width="@dimen/fab_subMenu"
+        android:layout_height="@dimen/fab_subMenu"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin_subMenu"
+        app:backgroundTint="@color/colorFabAdd"
+        app:srcCompat="@drawable/ic_add_white_24px" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fabRemove"
+        android:layout_width="@dimen/fab_subMenu"
+        android:layout_height="@dimen/fab_subMenu"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin_subMenu"
+        app:backgroundTint="@color/colorFabRemove"
+        app:srcCompat="@drawable/ic_remove_white_24px" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fabMenu"
+        android:layout_width="@dimen/fab_menu"
+        android:layout_height="@dimen/fab_menu"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
+        app:backgroundTint="@color/colorFabMenu"
         app:srcCompat="@drawable/ic_menu_white_24px" />
 
 </android.support.design.widget.CoordinatorLayout>
