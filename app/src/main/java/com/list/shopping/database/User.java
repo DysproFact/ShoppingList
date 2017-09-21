@@ -8,5 +8,5 @@ import java.util.List;
 
 public class User {
     public String id, login, email, passwd, firstName, lastName;
-    public List<Item> T_items;
+    public List<Grocery> T_groceries;
 }

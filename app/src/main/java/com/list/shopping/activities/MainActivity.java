@@ -10,13 +10,18 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
 import com.list.shopping.R;
+import com.list.shopping.database.DatabaseHelper;
+import com.list.shopping.database.User;
 import com.list.shopping.fragments.GroceryFragment;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -37,13 +42,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @BindView(R.id.nav_view)
     NavigationView navigationView;
 
+    private static final String TAG = MainActivity.class.getName();
     private boolean isFABOpen = false;
+    DatabaseHelper db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        ButterKnife.setDebug(true);
 
         setSupportActionBar(toolbar);
 
@@ -52,6 +60,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         toggle.syncState();
 
         navigationView.setNavigationItemSelectedListener(this);
+
+        db = DatabaseHelper.getInstance(this);
 
         // Gestion du fragment
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -74,14 +84,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    @OnClick({R.id.fabAdd, R.id.fabRemove})
-    public void fabSubMenuListener(FloatingActionButton fabSubMenu) {
-        if (fabSubMenu == fabAdd) {
-            Toast.makeText(this, "Ajouter", Toast.LENGTH_SHORT).show();
-        }
-        if (fabSubMenu == fabRemove) {
-            Toast.makeText(this, "Supprimer", Toast.LENGTH_SHORT).show();
-        }
+    @OnClick(R.id.fabAdd)
+    public void fabAddListener(FloatingActionButton fabSubMenu) {
+        Toast.makeText(this, "Ajouter", Toast.LENGTH_SHORT).show();
+    }
+
+    @OnClick(R.id.fabRemove)
+    public void fabRemoveListener(FloatingActionButton fabSubMenu) {
+        listUsers();
+        Toast.makeText(this, "Supprimer", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -142,5 +153,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onFragmentInteraction(Uri uri) {
 
+    }
+
+    public void listUsers(){
+        List<User> T_users = db.getAllUsers();
+
+        for (User user :T_users){
+            Log.d(TAG, "login : " + user.login + " || lastName" + user.lastName);
+        }
     }
 }

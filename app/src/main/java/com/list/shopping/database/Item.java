@@ -8,5 +8,5 @@ import java.util.List;
 
 public class Item {
     public String id, reference, name, price;
-    public List<User> T_users;
+    public List<Grocery> T_groceries;
 }

@@ -35,8 +35,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String USER_LAST_NAME = "last_name";
 
     // Library Table Columns
+    private static final String GROCERY_ID = "id";
     private static final String GROCERY_USER_ID = "user_id";
     private static final String GROCERY_ITEM_ID = "item_id";
+    private static final String GROCERY_CREATION_DATE = "creation_date";
+    private static final String GROCERY_SHOP_DATE = "shop_date";
 
     // Item Table Columns
     private static final String ITEM_ID = "id";
@@ -97,9 +100,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         String CREATE_GROCERY_TABLE = "CREATE TABLE " + TABLE_GROCERY +
                 "(" +
+                GROCERY_ID + " INTEGER," +
                 GROCERY_USER_ID + " INTEGER REFERENCES " + TABLE_USER + "(" + USER_ID + ")," +
                 GROCERY_ITEM_ID + " INTEGER REFERENCES " + TABLE_ITEM + "(" + ITEM_ID + ")," +
-                "PRIMARY KEY(" + GROCERY_USER_ID + ", " + GROCERY_ITEM_ID + ")" +
+                GROCERY_CREATION_DATE + " TEXT," +
+                GROCERY_SHOP_DATE + " TEXT," +
+                "PRIMARY KEY(" + GROCERY_ID + ", " + GROCERY_USER_ID + ")" +
                 ");";
 
         db.execSQL(CREATE_USER_TABLE);
@@ -421,15 +427,193 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
     //////////////////
-    // // // LIBRARY
+    // // // GROCERY
+    //////////////////
+    /**
+     * @param grocery Grocery
+     * @return String
+     */
+    public String addGrocery(Grocery grocery) {
+        // Ouverture de la BD en écriture
+        SQLiteDatabase db = getWritableDatabase();
+        String grocery_id = "";
+
+        db.beginTransaction();
+        try {
+            ContentValues values = new ContentValues();
+            values.put(GROCERY_USER_ID, grocery.user_id);
+            values.put(GROCERY_ITEM_ID, grocery.item_id);
+            values.put(GROCERY_CREATION_DATE, grocery.creation_date);
+            values.put(GROCERY_SHOP_DATE, grocery.shop_date);
+
+            grocery_id = String.valueOf(db.insertOrThrow(TABLE_ITEM, null, values));
+            db.setTransactionSuccessful();
+
+        } catch (Exception e) {
+            Log.d(TAG, "Une erreur s'est produite lors de la création d'une liste en BD.");
+        } finally {
+            db.endTransaction();
+        }
+        return grocery_id;
+    }
 
     /**
-     * Récupère la liste de jeux d'un user
+     * @param grocery
+     */
+    public void updateGrocery(Grocery grocery) {
+        // Ouverture de la BD en écriture
+        SQLiteDatabase db = getWritableDatabase();
+
+        db.beginTransaction();
+        try {
+            ContentValues values = new ContentValues();
+            values.put(GROCERY_USER_ID, grocery.user_id);
+            values.put(GROCERY_ITEM_ID, grocery.item_id);
+            values.put(GROCERY_CREATION_DATE, grocery.creation_date);
+            values.put(GROCERY_SHOP_DATE, grocery.shop_date);
+
+            db.update(TABLE_ITEM, values, ITEM_ID + "= ?", new String[]{grocery.id});
+        } catch (Exception e) {
+            Log.d(TAG, "Une erreur s'est produite lors de la mise à jour d'une liste en BD.");
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    /**
+     * @param grocery Grocery
+     */
+    public void deleteOneGrocery(Grocery grocery) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        db.beginTransaction();
+        try {
+            db.delete(TABLE_GROCERY, GROCERY_ITEM_ID + "= ?", new String[]{grocery.id});
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            Log.d(TAG, "Une erreur s'est produite lors de la suppression d'une liste.");
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    public void deleteAllGroceries() {
+        SQLiteDatabase db = getWritableDatabase();
+
+        db.beginTransaction();
+        try {
+            db.delete(TABLE_GROCERY, null, null);
+            db.setTransactionSuccessful();
+        } catch (Exception e) {
+            Log.d(TAG, "Une erreur s'est produite lors de la suppression de tous les articles.");
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    /**
+     * @return List<Grocery>
+     */
+    public List<Grocery> getAllGroceries() {
+        List<Grocery> T_groceries = new ArrayList<>();
+
+        String GROCERIES_SELECT_QUERY = String.format("SELECT * FROM %s ;", TABLE_GROCERY);
+
+        SQLiteDatabase db = getReadableDatabase();
+        groceryCursor = db.rawQuery(GROCERIES_SELECT_QUERY, null);
+        try {
+            if (groceryCursor.moveToFirst()) {
+                do {
+                    Grocery grocery = new Grocery();
+                    grocery.id = groceryCursor.getString(groceryCursor.getColumnIndex(GROCERY_ID));
+                    grocery.user = getUserById(groceryCursor.getString(groceryCursor.getColumnIndex(GROCERY_USER_ID)));
+                    grocery.item_id = groceryCursor.getString(groceryCursor.getColumnIndex(GROCERY_ITEM_ID));
+                    grocery.creation_date = groceryCursor.getString(groceryCursor.getColumnIndex(GROCERY_CREATION_DATE));
+                    grocery.shop_date = groceryCursor.getString(groceryCursor.getColumnIndex(GROCERY_SHOP_DATE));
+
+                    T_groceries.add(grocery);
+                } while (groceryCursor.moveToNext());
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "Une erreur s'est produite lors de la récuperation des toutes les listes.");
+        } finally {
+            if (groceryCursor != null && !groceryCursor.isClosed()) {
+                groceryCursor.close();
+            }
+        }
+        return T_groceries;
+    }
+
+    /**
+     * @param user_id
+     * @return Grocery
+     */
+    public Grocery getGroceryByUserId(String user_id) {
+        Grocery grocery = new Grocery();
+
+        SQLiteDatabase db = getReadableDatabase();
+        String queryString = "SELECT * FROM " + TABLE_GROCERY + " WHERE user_id = ?;";
+        groceryCursor = db.rawQuery(queryString, new String[]{user_id});
+        try {
+            if (groceryCursor.moveToFirst()) {
+                do {
+                    grocery.id = groceryCursor.getString(groceryCursor.getColumnIndex(GROCERY_ID));
+                    grocery.user = getUserById(user_id);
+                    grocery.item_id = groceryCursor.getString(groceryCursor.getColumnIndex(GROCERY_ITEM_ID));
+                    grocery.creation_date = groceryCursor.getString(groceryCursor.getColumnIndex(GROCERY_CREATION_DATE));
+                    grocery.shop_date = groceryCursor.getString(groceryCursor.getColumnIndex(GROCERY_SHOP_DATE));
+
+                } while (groceryCursor.moveToNext());
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "Une erreur s'est produite lors des listes d'un utilisateur.");
+        } finally {
+            if (groceryCursor != null && !groceryCursor.isClosed()) {
+                groceryCursor.close();
+            }
+        }
+        return grocery;
+    }
+
+    /**
+     *
+     * @param id
+     * @return List<Item>
+     */
+    public List<Item> getItemsFromGroceryId(String id){
+        List<Item> T_items = new ArrayList<>();
+
+        SQLiteDatabase db = getReadableDatabase();
+        String queryString = "SELECT * FROM " + TABLE_GROCERY + " WHERE id = ?;";
+        groceryCursor = db.rawQuery(queryString, new String[]{id});
+        try {
+            if (groceryCursor.moveToFirst()) {
+                do {
+                    Item item = new Item();
+                    item = getItemById(itemCursor.getString(itemCursor.getColumnIndex(ITEM_ID)));
+
+                    T_items.add(item);
+                } while (groceryCursor.moveToNext());
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "Une erreur s'est produite lors de la récuperation des articles de la liste.");
+        } finally {
+            if (groceryCursor != null && !groceryCursor.isClosed()) {
+                groceryCursor.close();
+            }
+        }
+        return T_items;
+    }
+
+
+
+    /**
+     * Récupère les liste de courses d'un user
      *
      * @param user User
      * @return List
      */
-    public List<Item> getUsersGrocery(User user) {
+    /*public List<Item> getUsersGrocery(User user) {
         List<Item> T_items = new ArrayList<>();
 
         String GROCERY_SELECT_QUERY = "SELECT * FROM " + TABLE_GROCERY +
@@ -453,14 +637,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         return T_items;
     }
-
+*/
     /**
      * Récupère la liste des users possédant cet item dans leurs listes
      *
      * @param item
      * @return List
      */
-    public List<User> getItemOwnedBy(Item item) {
+    /*public List<User> getItemOwnedBy(Item item) {
         List<User> T_users = new ArrayList<>();
 
         String GROCERY_SELECT_QUERY = "SELECT * FROM " + TABLE_GROCERY +
@@ -484,5 +668,5 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         return T_users;
     }
-
+*/
 }

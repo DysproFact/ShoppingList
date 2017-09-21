@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/textViewListName"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/activity_horizontal_margin"
+        android:textColor="#000" />
+
+    <TextView
+        android:id="@+id/textViewListLogin"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/activity_horizontal_margin"
+        android:textColor="#000"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true" />
+
+</RelativeLayout>
